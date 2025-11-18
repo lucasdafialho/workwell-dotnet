@@ -31,9 +31,9 @@ Log.Logger = new LoggerConfiguration()
 
 builder.Host.UseSerilog();
 
-// Database - Oracle
+// Database - SQL Server
 builder.Services.AddDbContext<WorkWellDbContext>(options =>
-    options.UseOracle(builder.Configuration.GetConnectionString("OracleConnection")));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")));
 
 // MongoDB
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDb"));
@@ -129,7 +129,7 @@ builder.Services.AddCors(options =>
 
 // Health Checks
 builder.Services.AddHealthChecks()
-    .AddOracle(builder.Configuration.GetConnectionString("OracleConnection")!, name: "oracle-db", tags: new[] { "database", "oracle" })
+    .AddSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")!, name: "sqlserver-db", tags: new[] { "database", "sqlserver" })
     .AddMongoDb(builder.Configuration.GetConnectionString("MongoDbConnection")!, name: "mongodb", tags: new[] { "database", "mongodb" })
     .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "redis", tags: new[] { "cache", "redis" });
 
