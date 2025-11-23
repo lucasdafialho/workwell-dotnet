@@ -77,6 +77,26 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
         ClockSkew = TimeSpan.Zero
     };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnAuthenticationFailed = context =>
+        {
+            Log.Warning("Authentication failed: {Error}", context.Exception.Message);
+            return Task.CompletedTask;
+        },
+        OnChallenge = context =>
+        {
+            Log.Warning("Authentication challenge: {Error}", context.Error ?? "No token provided");
+            return Task.CompletedTask;
+        },
+        OnTokenValidated = context =>
+        {
+            var userId = context.Principal?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+            Log.Information("Token validated successfully for user {UserId}", userId);
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddAuthorization(options =>
@@ -165,11 +185,12 @@ builder.Services.AddSwaggerGen(options =>
     // JWT Authentication in Swagger
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Example: \"Authorization: Bearer {token}\"",
+        Description = "JWT Authorization header using the Bearer scheme. Enter ONLY the token (without 'Bearer' prefix). Example: \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\"",
         Name = "Authorization",
         In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
     });
 
     options.AddSecurityRequirement(new OpenApiSecurityRequirement
