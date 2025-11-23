@@ -1,0 +1,13 @@
+{
+  "message": "Estou me sentindo muito sobrecarregado com o trabalho. Tenho muitas reuniões e pouco tempo para focar.",
+  "history": [
+    {
+      "role": "user",
+      "content": "Olá, preciso de ajuda"
+    },
+    {
+      "role": "assistant",
+      "content": "Olá! Como posso ajudá-lo hoje?"
+    }
+  ]
+}
