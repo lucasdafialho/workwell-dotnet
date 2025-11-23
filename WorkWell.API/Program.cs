@@ -8,7 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using MongoDB.Driver;
 using Serilog;
 using WorkWell.Application.Interfaces;
 using WorkWell.Application.Mappings;
@@ -16,7 +15,6 @@ using WorkWell.Application.Services;
 using WorkWell.Application.Validators;
 using WorkWell.Domain.Interfaces;
 using WorkWell.Infrastructure.Data;
-using WorkWell.Infrastructure.MongoDb;
 using WorkWell.Infrastructure.Repositories;
 using WorkWell.Infrastructure.Services;
 
@@ -35,20 +33,8 @@ builder.Host.UseSerilog();
 builder.Services.AddDbContext<WorkWellDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")));
 
-// MongoDB
-builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDb"));
-builder.Services.AddSingleton<IMongoClient>(sp =>
-{
-    var settings = builder.Configuration.GetSection("MongoDb").Get<MongoDbSettings>();
-    return new MongoClient(settings?.ConnectionString);
-});
-
-// Redis Cache
-builder.Services.AddStackExchangeRedisCache(options =>
-{
-    options.Configuration = builder.Configuration.GetConnectionString("RedisConnection");
-    options.InstanceName = "WorkWell_";
-});
+// Memory Cache (substitui Redis para simplificar)
+builder.Services.AddDistributedMemoryCache();
 
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
@@ -129,9 +115,7 @@ builder.Services.AddCors(options =>
 
 // Health Checks
 builder.Services.AddHealthChecks()
-    .AddSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")!, name: "sqlserver-db", tags: new[] { "database", "sqlserver" })
-    .AddMongoDb(builder.Configuration.GetConnectionString("MongoDbConnection")!, name: "mongodb", tags: new[] { "database", "mongodb" })
-    .AddRedis(builder.Configuration.GetConnectionString("RedisConnection")!, name: "redis", tags: new[] { "cache", "redis" });
+    .AddSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection")!, name: "sqlserver-db", tags: new[] { "database", "sqlserver" });
 
 // Rate Limiting
 builder.Services.AddRateLimiter(options =>
@@ -206,15 +190,12 @@ builder.Services.AddSwaggerGen(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "WorkWell API V1");
-        options.SwaggerEndpoint("/swagger/v2/swagger.json", "WorkWell API V2");
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "WorkWell API V1");
+    options.SwaggerEndpoint("/swagger/v2/swagger.json", "WorkWell API V2");
+});
 
 // Global Exception Handler
 app.UseExceptionHandler(appError =>

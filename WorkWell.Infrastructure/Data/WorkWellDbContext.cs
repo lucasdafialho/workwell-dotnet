@@ -18,6 +18,9 @@ public class WorkWellDbContext : DbContext
     public DbSet<CheckinDiario> CheckinsDiarios { get; set; } = null!;
     public DbSet<MetricaSaude> MetricasSaude { get; set; } = null!;
     public DbSet<AlertaBurnout> AlertasBurnout { get; set; } = null!;
+    public DbSet<ChatConversation> ChatConversations { get; set; } = null!;
+    public DbSet<ChatMessage> ChatMessages { get; set; } = null!;
+    public DbSet<MeditationSession> MeditationSessions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -33,6 +36,9 @@ public class WorkWellDbContext : DbContext
         ConfigureCheckinDiario(modelBuilder);
         ConfigureMetricaSaude(modelBuilder);
         ConfigureAlertaBurnout(modelBuilder);
+        ConfigureChatConversation(modelBuilder);
+        ConfigureChatMessage(modelBuilder);
+        ConfigureMeditationSession(modelBuilder);
     }
 
     private void ConfigureEmpresa(ModelBuilder modelBuilder)
@@ -152,6 +158,68 @@ public class WorkWellDbContext : DbContext
             entity.HasIndex(e => e.UsuarioId);
             entity.HasIndex(e => e.NivelRisco);
             entity.HasIndex(e => e.Lido);
+        });
+    }
+
+    private void ConfigureChatConversation(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ChatConversation>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(c => c.Usuario)
+                .WithMany()
+                .HasForeignKey(c => c.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasMany(c => c.Mensagens)
+                .WithOne(m => m.ChatConversation)
+                .HasForeignKey(m => m.ChatConversationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.HasIndex(e => e.UsuarioId);
+            entity.HasIndex(e => e.DataInicio);
+        });
+    }
+
+    private void ConfigureChatMessage(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<ChatMessage>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.Property(e => e.Role)
+                .HasMaxLength(20)
+                .IsRequired();
+
+            entity.Property(e => e.Conteudo)
+                .IsRequired();
+
+            entity.HasIndex(e => e.ChatConversationId);
+            entity.HasIndex(e => e.Timestamp);
+        });
+    }
+
+    private void ConfigureMeditationSession(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Entity<MeditationSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).ValueGeneratedOnAdd();
+
+            entity.HasOne(m => m.Usuario)
+                .WithMany()
+                .HasForeignKey(m => m.UsuarioId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            entity.Property(e => e.Tipo)
+                .HasMaxLength(50)
+                .IsRequired();
+
+            entity.HasIndex(e => new { e.UsuarioId, e.DataSessao });
+            entity.HasIndex(e => e.Concluida);
         });
     }
 
