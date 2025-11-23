@@ -9,6 +9,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using WorkWell.API;
 using WorkWell.Application.Interfaces;
 using WorkWell.Application.Mappings;
 using WorkWell.Application.Services;
@@ -188,6 +189,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 
 var app = builder.Build();
+
+DatabaseSeeder.SeedAsync(app.Services).GetAwaiter().GetResult();
 
 // Configure the HTTP request pipeline
 app.UseSwagger();
