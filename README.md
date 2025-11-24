@@ -2,6 +2,14 @@
 
 API RESTful completa para monitoramento de saúde mental e produtividade em ambientes de trabalho híbrido. Sistema backend desenvolvido em .NET 8 com integração de Machine Learning e IA Generativa para prevenção de burnout corporativo.
 
+## Vídeo Demonstrativo
+
+Assista ao vídeo demonstrativo do projeto:
+
+[![WorkWell Backend .NET - Demonstração](https://img.youtube.com/vi/Xmq0baHvGXM/0.jpg)](https://www.youtube.com/watch?v=Xmq0baHvGXM)
+
+[Link direto: https://www.youtube.com/watch?v=Xmq0baHvGXM](https://www.youtube.com/watch?v=Xmq0baHvGXM)
+
 ## Índice
 
 - [Sobre o Projeto](#sobre-o-projeto)
